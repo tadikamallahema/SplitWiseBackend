@@ -1,4 +1,5 @@
 import Balance from "../models/balanceModel.js";
+import { simplifyBalances } from "../service/balanceService.js";
 // import Settlement from "../models/settlementModel.js"; // optional
 
 export const settleUp = async (req, res) => {
@@ -39,3 +40,29 @@ export const settleUp = async (req, res) => {
     return res.status(500).json({success: false,message: err.message});
   }
 };
+
+export const getUserBalance=async(req,res)=>{
+  const {userId}=req.params;
+  try{
+    const youOwe=await Balance.find({fromUser:userId}).populate("toUser","name email");
+    const youAreOwed=await Balance.find({toUser:userId}).populate("fromUser","name mail");
+
+    return res.status(200).json({success:true,message:"success",youOwe,youAreOwed})
+  }catch(err){
+    return res.status(500).json({success:false , message:err.message})
+  }
+}
+
+
+export const simplifyGroupBalances = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    await simplifyBalances(groupId);
+
+    return res.status(200).json({ success: true, message: "Balances simplified successfully"});
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
